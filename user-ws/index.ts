@@ -1,12 +1,24 @@
-import { WebSocketServer, WebSocket } from "ws";
+import { WebSocketServer, WebSocket as Websocketclient } from "ws";
 
-const wss = new WebSocketServer({ port: 8080 });
+const wss = new WebSocketServer({ port: 8081 });
 
 interface Room {
-  sockets: WebSocket[];
+  sockets: Websocketclient[];
 }
 
 const rooms: Record<string, Room> = {};
+
+const RELAYER_URL = "ws://localhost:3001";
+
+const relayerSocket = new WebSocket(RELAYER_URL);
+
+relayerSocket.onmessage = ({data}: {data: string}) => {
+  const parsedData = JSON.parse(data);
+  if (parsedData.type == "chat") {
+    const room = parsedData.room;
+      rooms[room]?.sockets.map((socket) => socket.send(data));
+  }
+};
 
 wss.on("connection", function connection(ws) {
   ws.on("error", console.error);
@@ -26,8 +38,7 @@ wss.on("connection", function connection(ws) {
     }
 
     if (parsedData.type == "chat") {
-      const room = parsedData.room;
-      rooms[room]?.sockets.map((socket) => socket.send(data));
+      relayerSocket.send(data);
     }
   });
 });

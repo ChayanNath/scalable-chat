@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
-const BACKEND_URL = "ws://localhost:8080";
+const BACKEND_URL_1 = "ws://localhost:8080";
+const BACKEND_URL_2 = "ws://localhost:8081";
 
 function waitForOpen(ws: WebSocket): Promise<void> {
   return new Promise((resolve) => {
@@ -16,8 +17,8 @@ function waitForMessage(ws: WebSocket): Promise<any> {
 
 describe("Chat application", () => {
   test("should be able to send and receive messages", async () => {
-    const ws1 = new WebSocket(BACKEND_URL);
-    const ws2 = new WebSocket(BACKEND_URL);
+    const ws1 = new WebSocket(BACKEND_URL_1);
+    const ws2 = new WebSocket(BACKEND_URL_2);
 
     await Promise.all([waitForOpen(ws1), waitForOpen(ws2)]);
     ws1.send(JSON.stringify({ type: "join-room", room: "test-room" }));
